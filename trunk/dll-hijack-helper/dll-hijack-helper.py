@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 # DLL Hijacking Helper
 # Myo Soe, http://yehg.net/
-# 2013-09
+# 2013-12-08
 
-# requires Python 2.x
+# platform: Python 2.x @ Windows 
 
 import csv
 import shutil
@@ -22,7 +20,7 @@ def md5sum(filename):
                  md5.update(chunk)
         return md5.hexdigest()
     else:
-        print filename + " does not exist. You should run it from the program directory."
+        print filename + " does not exist. \nYou should run dll-hijack-helper from its directory not your tested application directory."
         sys.exit()
         
 
@@ -30,6 +28,14 @@ def md5sum(filename):
 
 # default ProcMon Output
 file = 'Logfile.CSV'
+
+if os.path.exists(file) == False:
+    print "\nLogfile.CSV was not found. Read README.txt.\n"
+    sys.exit()
+    
+
+# command to kill tested application process
+kill_cmd = 'taskkill /f /im target.exe && taskkill /f /im calc.exe'
 
 hijacker_dll =  'hijacker.dll'
 hijacker_dll_md5 = md5sum('hijacker.dll')
@@ -45,7 +51,7 @@ vuln_dlls  = []
 scanned_dlls = []
 header = 0 
 with open(file,'rb') as csvfile:
-    line_reader = csv.reader(csvfile,delimiter="\t",quotechar='"')
+    line_reader = csv.reader(csvfile,delimiter=",",quotechar='"')
     for row in line_reader:
         if header != 0:
             target_file =  str(row[4])
@@ -57,6 +63,8 @@ with open(file,'rb') as csvfile:
                     is_vuln = raw_input("\n[!] Launch the application to test it.\n[!] Enter 'y' key if it works, other key to continue\n_")
                     if re.search('y',is_vuln,re.M|re.I):
                         vuln_dlls.append(target_file)
+                    print "\nKilling the process ...\n"
+                    os.system(kill_cmd)                    
                     os.remove(target_file)
                     scanned_dlls.append(target_file)
                 else:
@@ -68,8 +76,10 @@ with open(file,'rb') as csvfile:
                         is_vuln = raw_input("\n[!] Launch the application to test it.\n[!] Enter 'y' key if it works, other key to continue.\n_")
                         if re.search('y',is_vuln,re.M|re.I):
                             vuln_dlls.append(target_file)                        
+                        print "\nKilling the process ...\n"
+                        os.system(kill_cmd)
                         os.remove(target_file) 
-                        scanned_dlls.append(target_file)                       
+                        scanned_dlls.append(target_file)
                     else:
                         print "Hijacker EXE already exists. \nSkipped creating -> " + target_file + "\n"
                     
@@ -82,8 +92,10 @@ with open(file,'rb') as csvfile:
                     is_vuln = raw_input("\n[!] Launch the application to test it.\n[!] Enter 'y' key if it works, other key to continue.\n_")
                     if re.search('y',is_vuln,re.M|re.I):
                         vuln_dlls.append(target_file)
+                    print "\nKilling the process ...\n"
+                    os.system(kill_cmd)
                     os.remove(target_file)  
-                    scanned_dlls.append(target_file)                  
+                    scanned_dlls.append(target_file)
                 else:
                     target_file_md5 =  md5sum(target_file)
                     if (target_file_md5!=hijacker_dll_md5):
@@ -93,6 +105,8 @@ with open(file,'rb') as csvfile:
                         is_vuln = raw_input("\n[!] Launch the application to test it. \n[!] Enter 'y' key if it works, other key to continue.")
                         if re.search('y',is_vuln,re.M|re.I):
                             vuln_dlls.append(target_file)
+                        print "\nKilling the process ...\n"
+                        os.system(kill_cmd)
                         os.remove(target_file)
                         scanned_dlls.append(target_file) 
                     else:
